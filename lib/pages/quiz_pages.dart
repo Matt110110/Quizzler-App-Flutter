@@ -16,6 +16,15 @@ class QuizPageState extends State<QuizPage> {
         new Column(
           children: <Widget>[
             new AnswerButton(true, () => print("You answered true")),
+            new Material(
+              color: Colors.white,
+              child: new Padding(
+                padding: new EdgeInsets.symmetric(vertical: 20.0),
+                child: new Center(
+                  child: new Text("Statement 1 : I am Matt"),
+                ),
+              ),
+            ),
             new AnswerButton(false, () => print("You answered false")),
           ],
         ),
