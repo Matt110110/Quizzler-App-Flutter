@@ -1,11 +1,12 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 
 class CorrectWrongOverlay extends StatefulWidget {
 
   final bool _isCorrect;
-  CorrectWrongOverlay(this._isCorrect);
+  final VoidCallback _onTap;
+
+  CorrectWrongOverlay(this._isCorrect, this._onTap);
 
   @override
   State createState() => new CorrectWrongOverlayState();
@@ -13,24 +14,30 @@ class CorrectWrongOverlay extends StatefulWidget {
 
 class CorrectWrongOverlayState extends State<CorrectWrongOverlay> with SingleTickerProviderStateMixin {
 
-  Animation<double> _mAnimation;
-  AnimationController _mController;
+  Animation<double> _iconAnimation;
+  AnimationController _iconAnimationController;
 
   @override
   void initState() {
     super.initState();
-      _mController = new AnimationController(duration: new Duration(seconds: 2), vsync: this);
-      _mAnimation = new CurvedAnimation(parent: _mController, curve: Curves.elasticOut);
-      _mAnimation.addListener(() => this.setState(() {}));
-      _mController.forward();
+    _iconAnimationController = new AnimationController(duration: new Duration(seconds: 2), vsync: this);
+    _iconAnimation = new CurvedAnimation(parent: _iconAnimationController, curve: Curves.elasticOut);
+    _iconAnimation.addListener(() => this.setState(() {}));
+    _iconAnimationController.forward();
   }
 
   @override
-  Widget build(BuildContext buildContext) {
+  void dispose() {
+    _iconAnimationController.dispose();
+    super.dispose();
+  }
+  
+  @override
+  Widget build(BuildContext context) {
     return new Material(
       color: Colors.black54,
       child: new InkWell(
-        onTap: () => print("You tapped the overlay"),
+        onTap: () => widget._onTap(),
         child: new Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -40,16 +47,14 @@ class CorrectWrongOverlayState extends State<CorrectWrongOverlay> with SingleTic
                 shape: BoxShape.circle
               ),
               child: new Transform.rotate(
-                angle: _mAnimation.value * 2 * PI,
-                child: new Icon(widget._isCorrect == true ? Icons.done : Icons.clear , size: _mAnimation.value * 80,),
+                angle: _iconAnimation.value * 2 * PI,
+                child: new Icon(widget._isCorrect == true ? Icons.done : Icons.clear, size: _iconAnimation.value * 80.0,),
               ),
             ),
             new Padding(
               padding: new EdgeInsets.only(bottom: 20.0),
             ),
-            new Text(widget._isCorrect == true ? "Correct!" : "Wrong!", style: new TextStyle(
-              color: Colors.white, fontSize: 30.0
-            ),)
+            new Text(widget._isCorrect == true ? "Correct!" : "Wrong!", style: new TextStyle(color: Colors.white, fontSize: 30.0),)
           ],
         ),
       ),

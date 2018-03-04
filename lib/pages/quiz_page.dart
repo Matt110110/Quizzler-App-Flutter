@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../utils/question.dart';
 import '../utils/quiz.dart';
 import '../UI/answer_button.dart';
-import '../UI/correct_wrong_overlay.dart';
 import '../UI/question_text.dart';
+import '../UI/correct_wrong_overlay.dart';
+import './score_page.dart';
 
 class QuizPage extends StatefulWidget {
   @override
@@ -11,9 +12,8 @@ class QuizPage extends StatefulWidget {
 }
 
 class QuizPageState extends State<QuizPage> {
-
-  Question mQuestion;
-  Quiz mQuiz = new Quiz([
+  Question currentQuestion;
+  Quiz quiz = new Quiz([
     new Question("Valentine's day is banned in Saudi Arabia", true),
     new Question("A slug's blood is green", true),
     new Question("Approximately one quarter of human bones are in the feet.", true),
@@ -28,15 +28,25 @@ class QuizPageState extends State<QuizPage> {
     new Question("No piece of square dry paper can be folded in half more than 7 times.", false),
     new Question("Chocolate affects a dog\'s heart and nervous system; a few ounces are enough to kill a small dog.", true)
   ]);
-
-  String question;
+  String questionText;
   int questionNumber;
   bool isCorrect;
+  bool overlayShouldBeVisible = false;
 
   @override
   void initState() {
     super.initState();
-    
+    currentQuestion = quiz.nextQuestion;
+    questionText = currentQuestion.question;
+    questionNumber = quiz.questionNumber;
+  }
+
+  void handleAnswer(bool answer) {
+    isCorrect = (currentQuestion.answer == answer);
+    quiz.answer(isCorrect);
+    this.setState(() {
+      overlayShouldBeVisible = true;
+    });
   }
 
   @override
@@ -44,14 +54,28 @@ class QuizPageState extends State<QuizPage> {
     return new Stack(
       fit: StackFit.expand,
       children: <Widget>[
-        new Column(
+        new Column( // This is our main page
           children: <Widget>[
-            new AnswerButton(true, () => print("You answered true")),
-            new QuestionText("Pizza is fake", 1),
-            new AnswerButton(false, () => print("You answered false")),
+            new AnswerButton(true, () => handleAnswer(true)), //true button
+            new QuestionText(questionText, questionNumber),
+            new AnswerButton(false, () => handleAnswer(false)), // false button
           ],
         ),
-        new CorrectWrongOverlay(true)
+        overlayShouldBeVisible == true ? new CorrectWrongOverlay(
+          isCorrect,
+          () {
+            if (quiz.length == questionNumber) {
+              Navigator.of(context).pushAndRemoveUntil(new MaterialPageRoute(builder: (BuildContext context) => new ScorePage(quiz.score, quiz.length)), (Route route) => route == null);
+              return;
+            }
+            currentQuestion = quiz.nextQuestion;
+            this.setState(() {
+              overlayShouldBeVisible = false;
+              questionText = currentQuestion.question;
+              questionNumber = quiz.questionNumber;
+            });
+          }
+        ) : new Container()
       ],
     );
   }

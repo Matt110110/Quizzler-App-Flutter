@@ -1,4 +1,4 @@
-package com.example.quizap;
+package com.example.quiz;
 
 import android.os.Bundle;
 
